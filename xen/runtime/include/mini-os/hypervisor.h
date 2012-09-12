@@ -18,14 +18,6 @@
 #include <mini-os/x86/hypercall-x86_64.h>
 #include <mini-os/x86/traps.h>
 
-/*
- * a placeholder for the start of day information passed up from the hypervisor
- */
-union start_info_union
-{
-    start_info_t start_info;
-    char padding[512];
-};
 extern start_info_t *xen_info;
 #define start_info (*xen_info)
 
