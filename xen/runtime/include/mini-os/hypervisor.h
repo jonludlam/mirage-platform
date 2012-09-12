@@ -26,8 +26,8 @@ union start_info_union
     start_info_t start_info;
     char padding[512];
 };
-extern union start_info_union start_info_union;
-#define start_info (start_info_union.start_info)
+extern start_info_t *xen_info;
+#define start_info (*xen_info)
 
 /* hypervisor.c */
 void force_evtchn_callback(void);
