@@ -55,3 +55,7 @@ val ethid : t -> string
 val mac : t -> string
 
 val get_writebuf : t -> Io_page.t Lwt.t
+
+val resume : unit -> unit Lwt.t
+
+val add_resume_hook : t -> (t -> unit Lwt.t) -> unit
