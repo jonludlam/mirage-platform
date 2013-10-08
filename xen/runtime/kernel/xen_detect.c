@@ -112,7 +112,7 @@ found:
     /* Fetch the hypercall jump table into memory just before the
        start of the code. According to the Pure64 memory map this
        contains the BIOS but we don't need that. */
-    mapped_pages = (char*) (0x100000L - 4096L * pages);
+    mapped_pages = (char*) (VIRT_START - 4096L * pages);
 
     page = (uint64_t) mapped_pages;
     for (i=0; i<pages; i++)
@@ -146,7 +146,7 @@ found:
 
     /* Permanently map the shared info page just before the .text
        segment (NB we've copied the hypercall jump table away) */
-    HYPERVISOR_shared_info = (shared_info_t*) (0x100000L - 4096L);
+    HYPERVISOR_shared_info = (shared_info_t*) (VIRT_START - 4096L);
     memset(HYPERVISOR_shared_info, 0, PAGE_SIZE);
 
     addtophys.domid = DOMID_SELF;
