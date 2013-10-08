@@ -210,14 +210,15 @@ module Xen = struct
     (* XXX check ocamlfind path here *)
     let xenlib = Util.run_and_read "ocamlfind query mirage" in
     let jmp_obj = Px (xenlib / "longjmp.o") in
-    let head_obj = Px (xenlib / "x86_64.o") in
+    let xen_obj = Px (xenlib / "x86_64.o") in
+    let head_obj = Px (xenlib / "hvm_start.o") in
     let ocamllib = match bc with |true -> "ocamlbc" |false -> "ocaml" in
     let ld = getenv ~default:"ld" "LD" in
     let ldlibs = List.map (fun x -> Px (xenlib / ("lib" ^ x ^ ".a")))
       [ocamllib; "xen"; "xencaml"; "diet"; "m"] in
     Cmd (S ( A ld :: [ T(tags++"link"++"xen");
       A"-d"; A"-nostdlib"; A"-m"; A"elf_x86_64"; A"-T";
-      Px (xenlib / "mirage-x86_64.lds");  head_obj; P arg ]
+      Px (xenlib / "mirage-x86_64.lds");  head_obj; xen_obj; P arg ]
       @ ldlibs @ [jmp_obj; A"-o"; Px out]))
 
   let cc_xen_bc_link tags arg out env = cc_xen_link true tags arg out env
