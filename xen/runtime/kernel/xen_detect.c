@@ -42,6 +42,7 @@
 #include <xen/version.h>
 #include <xen/hvm/hvm_op.h>
 #include <xen/hvm/params.h>
+#include <xen/memory.h>
 #include <log.h>
 
 static void cpuid(uint32_t idx, uint32_t *regs)
@@ -78,6 +79,7 @@ void look_for_xen(){
     char signature[13];
     char *mapped_pages;
     struct xen_hvm_param param;
+    struct xen_add_to_physmap addtophys;
 
     printk("Looking for Xen hypervisor\n");
 
@@ -119,7 +121,7 @@ found:
         WRMSR(msr, (uint32_t) page, (uint32_t) (page >> 32));
         page += 4096;
     };
-    printk("Mapped %d hypercall pages at %x\n", pages, mapped_pages);
+    printk("Mapped %d hypercall page(s) at %x\n", pages, mapped_pages);
 
     /* Copy the jump table into the (non page-aligned) array used
        by the hypercall asm. Note we cannot rewrite this pointer at
@@ -139,7 +141,32 @@ found:
     {
         printk("Failed to get xenstore PFN\n");
     };
-    xenstore_page = param.value;
+    xenstore_page = (char *)param.value;
     printk("xenstore pfn = %x\n", xenstore_page);
+
+    /* Permanently map the shared info page just before the .text
+       segment (NB we've copied the hypercall jump table away) */
+    HYPERVISOR_shared_info = (shared_info_t*) (0x100000L - 4096L);
+    memset(HYPERVISOR_shared_info, 0, PAGE_SIZE);
+
+    addtophys.domid = DOMID_SELF;
+    addtophys.space = XENMAPSPACE_shared_info;
+    addtophys.idx = 0;
+    addtophys.gpfn = (uint64_t)HYPERVISOR_shared_info >> PAGE_SHIFT;
+
+    if (HYPERVISOR_memory_op(XENMEM_add_to_physmap, &addtophys) != 0)
+    {
+        printk("Failed to get shared info page\n");
+    }
+
+    /* We can now initialise miniOS's timing machinery */
+    init_time ();
+    struct timeval tv;
+    if (gettimeofday(&tv, NULL) != 0)
+    {
+        printk("Failed to gettimeofday\n");
+    } else {
+        printk("UTC = %u.%06u\n", tv.tv_sec, tv.tv_usec);
+    }
 }
 
