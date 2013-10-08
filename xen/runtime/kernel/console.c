@@ -113,6 +113,39 @@ static void output_framebuffer(const char *buf, int len)
     };
 }
 
+void output_hexdump(const char *buf, int len)
+{
+    unsigned char nibble;
+    unsigned char byte;
+    int i, j;
+    for (i = 0; i < len; i++)
+    {
+        if ((i % 20 == 0) && (i > 0))
+        {
+            for (j = i - 20; j < i; j++)
+                output_char(isascii(*(buf + j))?*(buf + j):'.');
+            output_char('\n');
+        }
+        byte = *(buf + i);
+        nibble = byte >> 4;
+        if (nibble > 9)
+        {
+             output_char(nibble - 10 + 'a');
+        } else {
+             output_char(nibble + '0');
+        }
+        nibble = byte & 0xf;
+        if (nibble > 9)
+        {
+             output_char(nibble - 10 + 'a');
+        } else {
+             output_char(nibble + '0');
+        }
+        output_char(' ');
+    };
+    output_char('\n');
+}
+
 void print(const char *fmt, va_list args)
 {
     static char   buf[1024];
