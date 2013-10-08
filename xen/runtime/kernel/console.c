@@ -85,20 +85,28 @@ static void framebuffer_scroll()
         overwrite_char(24, col, ' ');
 }
 
+static void inc_line()
+{
+    next_line ++;
+    if (next_line == 25)
+    {
+        framebuffer_scroll ();
+        next_line = 24;
+    }
+}
+
 void output_char(char c)
 {
-    if (c == '\n') {
-        next_line ++;
+    if (c == '\n')
+    {
+        inc_line();
         next_col = 0;
         return;
     }
-    if (next_col == 80) {
-        next_line ++;
+    if (next_col == 80)
+    {
+        inc_line();
         next_col = 0;
-    }
-    if (next_line == 25) {
-        framebuffer_scroll ();
-        next_line = 24;
     }
     overwrite_char(next_line, next_col, c);
     next_col ++;
