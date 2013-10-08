@@ -45,6 +45,7 @@
 #include <stdarg.h>
 
 void console_clear(void);
+void output_hexdump(void*, int);
 
 void print( const char *fmt, va_list args);
 void printk(const char *fmt, ...);
