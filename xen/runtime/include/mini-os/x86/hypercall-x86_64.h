@@ -41,7 +41,7 @@
 #define __STR(x) #x
 #define STR(x) __STR(x)
 
-extern char hypercall_page[PAGE_SIZE];
+extern char *hypercall_page;
 
 #define _hypercall0(type, name)			\
 ({						\
