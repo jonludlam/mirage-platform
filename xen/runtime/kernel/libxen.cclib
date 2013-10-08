@@ -11,3 +11,4 @@ hypervisor.o
 kernel.o
 main.o
 mm.o
+xen_detect.o

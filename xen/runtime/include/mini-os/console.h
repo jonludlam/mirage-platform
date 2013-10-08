@@ -44,6 +44,8 @@
 #include <xen/io/console.h>
 #include <stdarg.h>
 
+void console_clear(void);
+
 void print( const char *fmt, va_list args);
 void printk(const char *fmt, ...);
 void xprintk(const char *fmt, ...);

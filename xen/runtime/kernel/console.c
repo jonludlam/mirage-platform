@@ -56,38 +56,60 @@ void output_xen(const char *buf, int len)
     xencons_ring_send(NULL, buf, len);
 }
 
-static char *vidmem = (const char *) 0xb8000;
+static char *vidmem = (char *) 0xb8000;
 static int next_line = 0;
 static int next_col = 0;
+
+static void overwrite_char(int line, int col, char c)
+{
+    int i = (line * 80 + col) * 2;
+    vidmem[i]= c;
+    vidmem[i+1]= 0x7;
+}
+
+void console_clear()
+{
+    for (int line = 0; line < 25; line ++){
+        for (int col = 0; col < 80; col ++){
+            overwrite_char(line, col, ' ');
+        }
+    };
+    next_line = 0;
+    next_col = 0;
+}
 
 static void framebuffer_scroll()
 {
     memmove(vidmem, vidmem + 80 * 2, 24 * 80 * 2);
+    for (int col = 0; col < 80; col ++)
+        overwrite_char(24, col, ' ');
+}
+
+void output_char(char c)
+{
+    if (c == '\n') {
+        next_line ++;
+        next_col = 0;
+        return;
+    }
+    if (next_col == 80) {
+        next_line ++;
+        next_col = 0;
+    }
+    if (next_line == 25) {
+        framebuffer_scroll ();
+        next_line = 24;
+    }
+    overwrite_char(next_line, next_col, c);
+    next_col ++;
 }
 
 static void output_framebuffer(const char *buf, int len)
 {
-    int i;
     while (*buf)
     {
-        if (*buf == '\n') {
-            next_line ++;
-            next_col = 0;
-            break;
-        }
-        if (next_col == 80) {
-            next_line ++;
-            next_col = 0;
-        }
-        if (next_line == 25) {
-            framebuffer_scroll ();
-            next_line = 24;
-        }
-        i = (next_line * 80 + next_col) * 2;
-        vidmem[i]= *buf;
-        *buf ++;
-        vidmem[i+1]= 0x7;
-        next_col ++;
+        output_char(*buf);
+        buf ++;
     };
 }
 

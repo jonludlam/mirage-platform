@@ -42,11 +42,18 @@
 #include <xen/version.h>
 #include <log.h>
 
+extern void look_for_xen();
+
+/* This function must be at the beginning of the .text segment.
+   For now make sure it's the only function in this file, and it at the
+   start of the link line. */
 int start_kernel_hvm()
 {
+    console_clear();
     printk("mirage OS, HVM edition!\n");
+    look_for_xen();
+    printk("spinning forever\n");
     while (1) {
     };
     return 0;
 }
-
