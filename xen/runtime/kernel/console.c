@@ -51,6 +51,46 @@ void console_print(const char *data, unsigned int length)
     xencons_ring_send(NULL, data, length);
 }
 
+void output_xen(const char *buf, int len)
+{
+    xencons_ring_send(NULL, buf, len);
+}
+
+static char *vidmem = (const char *) 0xb8000;
+static int next_line = 0;
+static int next_col = 0;
+
+static void framebuffer_scroll()
+{
+    memmove(vidmem, vidmem + 80 * 2, 24 * 80 * 2);
+}
+
+static void output_framebuffer(const char *buf, int len)
+{
+    int i;
+    while (*buf)
+    {
+        if (*buf == '\n') {
+            next_line ++;
+            next_col = 0;
+            break;
+        }
+        if (next_col == 80) {
+            next_line ++;
+            next_col = 0;
+        }
+        if (next_line == 25) {
+            framebuffer_scroll ();
+            next_line = 24;
+        }
+        i = (next_line * 80 + next_col) * 2;
+        vidmem[i]= *buf;
+        *buf ++;
+        vidmem[i+1]= 0x7;
+        next_col ++;
+    };
+}
+
 void print(const char *fmt, va_list args)
 {
     static char   buf[1024];
@@ -58,7 +98,8 @@ void print(const char *fmt, va_list args)
     (void)vsnprintf(buf, sizeof(buf), fmt, args);
 //    (void)HYPERVISOR_console_io(CONSOLEIO_write, strlen(buf), buf);
 
-    xencons_ring_send(NULL, buf, strlen(buf));
+//    output_xen(buf, strlen(buf));
+    output_framebuffer(buf, strlen(buf));
 }
 
 void printk(const char *fmt, ...)
