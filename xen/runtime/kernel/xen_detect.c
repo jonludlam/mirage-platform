@@ -168,5 +168,13 @@ found:
     } else {
         printk("UTC = %u.%06u\n", tv.tv_sec, tv.tv_usec);
     }
+    trap_init();
+    printk("Registered trap table\n");
+    setup_xen_features();
+    printk("Setup xen features\n");
+    init_mm();
+    printk("Memory manager initialized\n");
+    /* At this point malloc and free should be working */
+    app_main();
 }
 

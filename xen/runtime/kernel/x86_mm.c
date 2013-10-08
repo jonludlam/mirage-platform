@@ -938,19 +938,25 @@ void arch_init_mm(unsigned long* start_pfn_p, unsigned long* max_pfn_p)
         start_info.nr_pt_frames + 3;
     max_pfn = start_info.nr_pages;
 
+/* XXX: hard-code values for now */
+    start_pfn = 0x1000; /* 16MiB */
+    max_pfn = 0x2000; /* 32 MiB */
+
     /* We need room for demand mapping, clip available memory */
 
     printk("  start_pfn: %lx\n", start_pfn);
     printk("    max_pfn: %lx\n", max_pfn);
 
     build_pagetable(&start_pfn, &max_pfn);
-    clear_bootstrap();
-    set_readonly(&_text, &_erodata);
+    /* clear_bootstrap(); */
+    /* set_readonly(&_text, &_erodata); */
 
     /* get the number of physical pages the system has. Used to check for
      * system memory. */
     system_ram_end_mfn = HYPERVISOR_memory_op(XENMEM_maximum_ram_page, NULL);
+    printk("system_ram_end_mfn = %x\n", system_ram_end_mfn);
 
     *start_pfn_p = start_pfn;
     *max_pfn_p = max_pfn;
 }
+

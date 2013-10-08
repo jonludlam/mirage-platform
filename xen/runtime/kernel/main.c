@@ -46,7 +46,7 @@ caml_block_domain(value v_timeout)
 
 #define CAML_ENTRYPOINT "OS.Main.run"
 
-void app_main(start_info_t *si)
+void app_main()
 {
   value *v_main;
   int caml_completed = 0;

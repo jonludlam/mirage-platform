@@ -192,7 +192,9 @@ void caml_main(char **argv)
     if (caml_termination_hook != NULL) caml_termination_hook(NULL);
     return;
   }
+  printk("About to call caml_start_program\n");
   res = caml_start_program();
+  printk("caml_start_program returned\n");
   if (Is_exception_result(res))
     caml_fatal_uncaught_exception(Extract_exception(res));
 }

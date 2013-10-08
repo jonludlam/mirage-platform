@@ -387,6 +387,7 @@ void init_mm(void)
     /*
      * now we can initialise the page allocator
      */
+    printk("MM: start_pfn = %x, max_pfn = %x\n", start_pfn, max_pfn);
     printk("MM: Initialise page allocator for %p -> %p\n", pfn_to_virt(start_pfn), pfn_to_virt(max_pfn));
     init_page_allocator(PFN_PHYS(start_pfn), PFN_PHYS(max_pfn));
     printk("MM: done\n");
