@@ -153,6 +153,13 @@ HYPERVISOR_stack_switch(
 	return _hypercall2(int, stack_switch, ss, esp);
 }
 
+static inline unsigned long
+HYPERVISOR_hvm_op(
+	int op, void *arg)
+{
+       return _hypercall2(unsigned long, hvm_op, op, arg);
+}
+
 static inline int
 HYPERVISOR_set_callbacks(
 	unsigned long event_address, unsigned long failsafe_address, 

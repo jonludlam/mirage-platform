@@ -40,6 +40,8 @@
 #include <fcntl.h>
 #include <xen/features.h>
 #include <xen/version.h>
+#include <xen/hvm/hvm_op.h>
+#include <xen/hvm/params.h>
 #include <log.h>
 
 static void cpuid(uint32_t idx, uint32_t *regs)
@@ -66,6 +68,8 @@ static void cpuid(uint32_t idx, uint32_t *regs)
         : "c" (msr), "a" (val1), "d" (val2));
 
 char *hypercall_page;
+int xenstore_evtchn;
+char *xenstore_page;
 
 /* based on xen-unstable/tools/misc/xen-detect.c */
 void look_for_xen(){
@@ -73,6 +77,8 @@ void look_for_xen(){
     uint64_t page;
     int version, i;
     char signature[13];
+    struct xen_hvm_param param;
+
     printk("Looking for Xen hypervisor\n");
 
     for ( base = 0x40000000; base < 0x40010000; base += 0x100 )
@@ -112,5 +118,20 @@ found:
     };
     printk("Mapped %d hypercall pages at %x\n", pages, hypercall_page);
 
+    param.domid = DOMID_SELF;
+    param.index = HVM_PARAM_STORE_EVTCHN;
+    if (HYPERVISOR_hvm_op(HVMOP_get_param, &param) != 0)
+    {
+        printk("Failed to get xenstore evtchn\n");
+    };
+    printk("xenstore evtchn = %d\n", xenstore_evtchn);
+    xenstore_evtchn = param.value;
+    param.index = HVM_PARAM_STORE_PFN;
+    if (HYPERVISOR_hvm_op(HVMOP_get_param, &param) != 0)
+    {
+        printk("Failed to get xenstore PFN\n");
+    };
+    xenstore_page = param.value;
+    printk("xenstore pfn = %x\n", xenstore_page);
 }
 
