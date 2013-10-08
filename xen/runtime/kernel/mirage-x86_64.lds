@@ -1,6 +1,7 @@
-OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64", "elf64-x86-64")
+OUTPUT_FORMAT("binary", "binary", "binary")
+/* OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64", "elf64-x86-64") */
 OUTPUT_ARCH(i386:x86-64)
-ENTRY(_start)
+ENTRY(start_kernel)
 SECTIONS
 {
   . = 0x0;
@@ -11,12 +12,17 @@ SECTIONS
 	} = 0x9090
 
   _etext = .;			/* End of text section */
-  .rodata : { *(.rodata) *(.rodata.*) }
   . = ALIGN(4096);
   _erodata = .;
 
   .data : {			/* Data */
+        *(.rodata)
+        *(.rodata.*)
 	*(.data)
+
+        *(.mltext)
+        *(.mldata)
+        *(.mlrodata)
 	}
 
   _edata = .;			/* End of data section */
@@ -25,9 +31,6 @@ SECTIONS
   _mlstart = . ;		/* Start of ML section */
 
   .ml : {
-       *(.mltext)
-       *(.mldata)
-       *(.mlrodata)
   }
 
   _mlend = . ;			/* End of ML section */
