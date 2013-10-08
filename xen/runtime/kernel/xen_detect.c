@@ -67,7 +67,6 @@ static void cpuid(uint32_t idx, uint32_t *regs)
         : \
         : "c" (msr), "a" (val1), "d" (val2));
 
-char *hypercall_page;
 int xenstore_evtchn;
 char *xenstore_page;
 
@@ -77,6 +76,7 @@ void look_for_xen(){
     uint64_t page;
     int version, i;
     char signature[13];
+    char *mapped_pages;
     struct xen_hvm_param param;
 
     printk("Looking for Xen hypervisor\n");
@@ -107,16 +107,24 @@ found:
     msr = regs[1];
     printk("Number of hypercall pages: %d; MSR = %x\n", pages, msr);
 
-    /* Use the page before the code section for hypercalls */
-    hypercall_page = (char*) (0x100000L - 4096L * pages);
-    page = (uint64_t) hypercall_page;
+    /* Fetch the hypercall jump table into memory just before the
+       start of the code. According to the Pure64 memory map this
+       contains the BIOS but we don't need that. */
+    mapped_pages = (char*) (0x100000L - 4096L * pages);
+
+    page = (uint64_t) mapped_pages;
     for (i=0; i<pages; i++)
     {
         printk("Allocating memory at %x for hypercalls\n", page);
         WRMSR(msr, (uint32_t) page, (uint32_t) (page >> 32));
         page += 4096;
     };
-    printk("Mapped %d hypercall pages at %x\n", pages, hypercall_page);
+    printk("Mapped %d hypercall pages at %x\n", pages, mapped_pages);
+
+    /* Copy the jump table into the (non page-aligned) array used
+       by the hypercall asm. Note we cannot rewrite this pointer at
+       runtime because it's baked into the assembler by the linker. */
+    memcpy(hypercall_page, mapped_pages, PAGE_SIZE);
 
     param.domid = DOMID_SELF;
     param.index = HVM_PARAM_STORE_EVTCHN;
