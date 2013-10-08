@@ -403,5 +403,6 @@ num_printf:
   }
   return len;
 }
-
+#if 0
 link_warning("__v_printf","warning: the printf functions add several kilobytes of bloat.")
+#endif
