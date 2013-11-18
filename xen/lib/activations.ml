@@ -50,7 +50,6 @@ let dump () =
     if ports.(i).counter <> program_start
     then Printf.printf "port %d: %d\n%!" i (ports.(i).counter - program_start)
   done
-
 let after evtchn counter =
   let port = Eventchn.to_int evtchn in
   lwt () = while_lwt ports.(port).counter <= counter && (Eventchn.is_valid evtchn) do

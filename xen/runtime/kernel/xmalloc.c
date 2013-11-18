@@ -145,6 +145,7 @@ void *_xmalloc(size_t size, size_t align)
     size_t hdr_size;
     /* unsigned long flags; */
 
+    printk("In xmalloc\n");
     hdr_size = sizeof(struct xmalloc_hdr) + sizeof(struct xmalloc_pad);
     /* Align on headers requirements. */
     align = align_up(align, __alignof__(struct xmalloc_hdr));

@@ -265,6 +265,7 @@ unsigned long alloc_pages(int order)
     chunk_head_t *alloc_ch, *spare_ch;
     chunk_tail_t            *spare_ct;
 
+    printk("In alloc_pages(order=%d)\n",order);
 
     /* Find smallest order which can satisfy the request. */
     for ( i = order; i < FREELIST_SIZE; i++ ) {
@@ -300,6 +301,7 @@ unsigned long alloc_pages(int order)
     
     map_alloc(PHYS_PFN(to_phys(alloc_ch)), 1UL<<order);
 
+    printk("Returning: 0x%Lx\n",(unsigned long)alloc_ch);
     return((unsigned long)alloc_ch);
 
  no_memory:
@@ -376,6 +378,36 @@ int free_physical_pages(xen_pfn_t *mfns, int n)
     return HYPERVISOR_memory_op(XENMEM_decrease_reservation, &reservation);
 }
 
+typedef struct SMAP_entry {
+  uint64_t start;
+  uint64_t len;
+  uint32_t flags;
+  uint32_t dummy; // Pure64 asks for 24 byte e820 entries
+}__attribute__((packed)) SMAP_entry_t;
+ 
+
+void parse_e820(uint64_t *start_pfn, uint64_t *max_pfn)
+{
+  SMAP_entry_t *mmap = 0x4000;
+  int i=0;
+  uint64_t largest_start=-1, largest_len=0;
+
+  while(mmap[i].start != 0x0 || mmap[i].len != 0x0 || mmap[i].flags != 0x0) {
+    if(mmap[i].flags == 1 && mmap[i].len > largest_len) {
+      largest_start = mmap[i].start;
+      largest_len = mmap[i].len;
+    }
+    i++;
+  }
+
+  printk("Detected largest contiguous memory chunk at address=0x%Ld (%d megs)\n",
+	 largest_start, largest_len >> 20);
+
+  uint64_t kernel_len = &(_end) - &(_text);
+  *start_pfn=PHYS_PFN(largest_start + kernel_len);
+  *max_pfn=PHYS_PFN(largest_start + largest_len);
+}
+
 void init_mm(void)
 {
 
@@ -383,7 +415,8 @@ void init_mm(void)
 
     printk("MM: Init\n");
 
-    arch_init_mm(&start_pfn, &max_pfn);
+    parse_e820(&start_pfn, &max_pfn);
+    /*arch_init_mm(&start_pfn, &max_pfn);*/
     /*
      * now we can initialise the page allocator
      */
@@ -392,7 +425,7 @@ void init_mm(void)
     init_page_allocator(PFN_PHYS(start_pfn), PFN_PHYS(max_pfn));
     printk("MM: done\n");
 
-    arch_init_p2m(max_pfn);
+    //    arch_init_p2m(max_pfn);
     
     arch_init_demand_mapping_area(max_pfn);
 }

@@ -212,6 +212,7 @@ let _ =
     for i = Raw.nr_reserved () to Raw.nr_entries () - 1 do
         Gntshr.put i;
     done;
-    Raw.init ()
+    Raw.init ();
+    Printf.printf "finished init\n%!"
 
 

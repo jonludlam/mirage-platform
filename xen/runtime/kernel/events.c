@@ -31,7 +31,7 @@ void unbind_evtchn(evtchn_port_t port)
     clear_evtchn(port);
 
     close.port = port;
-    rc = HYPERVISOR_event_channel_op(EVTCHNOP_close, &close);
+    /*    rc = HYPERVISOR_event_channel_op(EVTCHNOP_close, &close);*/
     if ( rc )
         printk("WARN: close_port %s failed rc=%d. ignored\n", port, rc);
 }
@@ -75,7 +75,7 @@ int evtchn_alloc_unbound(domid_t pal, evtchn_port_t *port)
     evtchn_alloc_unbound_t op;
     op.dom = DOMID_SELF;
     op.remote_dom = pal;
-    rc = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound, &op);
+    /*    rc = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound, &op);*/
     if ( rc )
     {
         printk("ERROR: alloc_unbound failed with rc=%d", rc);
@@ -95,7 +95,7 @@ int evtchn_bind_interdomain(domid_t pal, evtchn_port_t remote_port,
     evtchn_bind_interdomain_t op;
     op.remote_dom = pal;
     op.remote_port = remote_port;
-    rc = HYPERVISOR_event_channel_op(EVTCHNOP_bind_interdomain, &op);
+    /*    rc = HYPERVISOR_event_channel_op(EVTCHNOP_bind_interdomain, &op);*/
     if ( rc )
     {
         printk("ERROR: bind_interdomain domid = %d port = %d failed: %d", pal, remote_port, rc);
@@ -112,7 +112,7 @@ int evtchn_bind_virq(uint32_t virq, evtchn_port_t *port)
     evtchn_bind_virq_t op;
     op.virq = virq;
     op.vcpu = 0;
-    rc = HYPERVISOR_event_channel_op(EVTCHNOP_bind_virq, &op);
+    /*    rc = HYPERVISOR_event_channel_op(EVTCHNOP_bind_virq, &op);*/
     if ( rc ) {
         printk("ERROR: bind_virq failed with rc=%d", rc);
         return rc;

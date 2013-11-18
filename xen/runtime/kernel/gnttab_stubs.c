@@ -181,10 +181,13 @@ caml_gnttab_end_access(value v_ref)
 }
 
 
+char table[NR_GRANT_FRAMES * 4096];
+
 /* Initialise grant tables and map machine frames to a VA */
 CAMLprim value
 caml_gnttab_init(value unit)
 {
+  /*  CAMLparam1(unit);
     struct gnttab_setup_table setup;
     unsigned long frames[NR_GRANT_FRAMES];
 
@@ -192,11 +195,13 @@ caml_gnttab_init(value unit)
     setup.nr_frames = NR_GRANT_FRAMES;
     set_xen_guest_handle(setup.frame_list, frames);
 
-    HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
-    gnttab_table = map_frames(frames, NR_GRANT_FRAMES);
+    //HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
+    //    gnttab_table = map_frames(frames, NR_GRANT_FRAMES);
+    gnttab_table = table;
     printk("gnttab_table mapped at %p\n", gnttab_table);
+  */
 
-    return Val_unit;
+  return Val_unit;
 }
 
 /* Disable grant tables */

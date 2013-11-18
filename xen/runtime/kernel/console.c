@@ -45,26 +45,38 @@
 #include <xen/io/console.h>
 
 
+void output_framebuffer(const char *buf, int len);
+
 void console_print(const char *data, unsigned int length)
 {
 //    (void)HYPERVISOR_console_io(CONSOLEIO_write, length, data);
-    xencons_ring_send(NULL, data, length);
+//    xencons_ring_send(NULL, data, length);
+	output_framebuffer(data,length);
 }
 
 void output_xen(const char *buf, int len)
 {
-    xencons_ring_send(NULL, buf, len);
+//    xencons_ring_send(NULL, buf, len);
+	output_framebuffer(buf,len);
 }
 
-static char *vidmem = (char *) 0xb8000;
-static int next_line = 0;
-static int next_col = 0;
 
-static void overwrite_char(int line, int col, char c)
+int next_line = 1;
+int next_col = 1;
+
+void outb(uint16_t addr, uint8_t val)
 {
+  asm volatile ( "outb %%al, %%dx" : : "d" (addr), "a" (val) );
+}
+
+void overwrite_char(int line, int col, char c)
+{
+  volatile char *vidmem = (char *) 0xb8000;
+
     int i = (line * 80 + col) * 2;
     vidmem[i]= c;
     vidmem[i+1]= 0x7;
+
 }
 
 void console_clear()
@@ -78,11 +90,19 @@ void console_clear()
     next_col = 0;
 }
 
-static void framebuffer_scroll()
+void framebuffer_scroll()
 {
-    memmove(vidmem, vidmem + 80 * 2, 24 * 80 * 2);
+    volatile char *vidmem = (char *) 0xb8000;
+    int count=80*2*24;
+    volatile char *from, *to;
+    from=vidmem+80*2;
+    to=vidmem;
+    while(count--) {
+      *to++ = *from++;
+    }
+    //    mymemmove(vidmem, vidmem + 80 * 2, 80 * 2 * 24);
     for (int col = 0; col < 80; col ++)
-        overwrite_char(24, col, ' ');
+	  overwrite_char(24, col, ' ');
 }
 
 static void inc_line()
@@ -90,13 +110,14 @@ static void inc_line()
     next_line ++;
     if (next_line == 25)
     {
-        framebuffer_scroll ();
+      framebuffer_scroll ();
         next_line = 24;
     }
 }
 
 void output_char(char c)
 {
+    outb(0xe9, c);
     if (c == '\n')
     {
         inc_line();
@@ -112,7 +133,7 @@ void output_char(char c)
     next_col ++;
 }
 
-static void output_framebuffer(const char *buf, int len)
+void output_framebuffer(const char *buf, int len)
 {
     while (*buf)
     {

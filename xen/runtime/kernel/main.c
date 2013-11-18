@@ -45,13 +45,19 @@ caml_block_domain(value v_timeout)
 }
 
 #define CAML_ENTRYPOINT "OS.Main.run"
+extern void * caml_program;
 
 void app_main()
 {
   value *v_main;
   int caml_completed = 0;
+  for(int i=0; i<25; i++) {
+    printk("app_main()\n");
+  }
   local_irq_save(irqflags);
+  printk("saved local irq\n");
   caml_startup(argv);
+  printk("caml_startup OK\n");
   v_main = caml_named_value(CAML_ENTRYPOINT);
   if (v_main == NULL){
 	printk("ERROR: CAML_ENTRYPOINT %s is NULL\n", CAML_ENTRYPOINT);

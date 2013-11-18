@@ -142,6 +142,8 @@ static void parse_camlrunparam(void)
   }
 }
 
+extern void * caml_program;
+
 /* These are termination hooks used by the systhreads library */
 struct longjmp_buffer caml_termination_jmpbuf;
 void (*caml_termination_hook)(void *) = NULL;
@@ -160,16 +162,21 @@ void caml_main(char **argv)
   char tos;
 
   caml_init_ieee_floats();
+  printk("done ieee floats\n");
   caml_init_custom_operations();
-#ifdef DEBUG
+  printk("done custom ops\n");
   caml_verb_gc = 63;
+#ifdef DEBUG
+
 #endif
   caml_top_of_stack = &tos;
 #ifndef SYS_xen
   parse_camlrunparam();
 #endif
+  printk("about to init_gc\n");
   caml_init_gc (minor_heap_init, heap_size_init, heap_chunk_init,
                 percent_free_init, max_percent_free_init);
+  printk("done init_gc\n");
   init_atoms();
   caml_init_signals();
 #ifndef SYS_xen
@@ -192,7 +199,7 @@ void caml_main(char **argv)
     if (caml_termination_hook != NULL) caml_termination_hook(NULL);
     return;
   }
-  printk("About to call caml_start_program\n");
+  printk("About to call caml_start_program (caml_program=%x)\n",caml_program);
   res = caml_start_program();
   printk("caml_start_program returned\n");
   if (Is_exception_result(res))

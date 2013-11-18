@@ -34,8 +34,9 @@ let h = Eventchn.init ()
 let create () =
   let backend_id = 0 in
   let gnt = Gnt.console in
-  let page = Start_info.console_start_page () in
-  let ring = Io_page.to_cstruct page in
+(*  let page = Start_info.console_start_page () in
+  let ring = Io_page.to_cstruct page in *)
+  let ring = Io_page.to_cstruct (Io_page.get 1) in
   Console_ring.Ring.init ring; (* explicitly zero the ring *)
   let evtchn = Eventchn.of_int Start_info.((get ()).console_evtchn) in
   let waiters = Lwt_sequence.create () in

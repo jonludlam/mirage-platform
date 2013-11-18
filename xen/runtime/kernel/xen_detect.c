@@ -112,7 +112,7 @@ found:
     /* Fetch the hypercall jump table into memory just before the
        start of the code. According to the Pure64 memory map this
        contains the BIOS but we don't need that. */
-    mapped_pages = (char*) (VIRT_START - 4096L * pages);
+    mapped_pages = (char*) (&(_text) - 4096L * pages);
 
     page = (uint64_t) mapped_pages;
     for (i=0; i<pages; i++)
@@ -129,24 +129,27 @@ found:
     memcpy(hypercall_page, mapped_pages, PAGE_SIZE);
 
     param.domid = DOMID_SELF;
-    param.index = HVM_PARAM_STORE_EVTCHN;
+    param.index = HVM_PARAM_STORE_PFN;
     if (HYPERVISOR_hvm_op(HVMOP_get_param, &param) != 0)
     {
         printk("Failed to get xenstore evtchn\n");
     };
-    printk("xenstore evtchn = %d\n", xenstore_evtchn);
-    xenstore_evtchn = param.value;
-    param.index = HVM_PARAM_STORE_PFN;
+    xenstore_page = (char *)param.value;
+    printk("xenstore pfn = %x\n", xenstore_page);
+
+    param.index = HVM_PARAM_STORE_EVTCHN;
+    param.domid = DOMID_SELF;
     if (HYPERVISOR_hvm_op(HVMOP_get_param, &param) != 0)
     {
         printk("Failed to get xenstore PFN\n");
     };
-    xenstore_page = (char *)param.value;
-    printk("xenstore pfn = %x\n", xenstore_page);
+    xenstore_evtchn = param.value;
+    printk("xenstore evtchn = %d\n", xenstore_evtchn);
+
 
     /* Permanently map the shared info page just before the .text
        segment (NB we've copied the hypercall jump table away) */
-    HYPERVISOR_shared_info = (shared_info_t*) (VIRT_START - 4096L);
+    HYPERVISOR_shared_info = (shared_info_t*) (&(_text) - 4096L);
     memset(HYPERVISOR_shared_info, 0, PAGE_SIZE);
 
     addtophys.domid = DOMID_SELF;
@@ -172,9 +175,35 @@ found:
     printk("Registered trap table\n");
     setup_xen_features();
     printk("Setup xen features\n");
-    init_mm();
-    printk("Memory manager initialized\n");
-    /* At this point malloc and free should be working */
-    app_main();
+}
+
+
+void do_start()
+{
+  init_mm();
+  printk("Memory manager initialized\n");
+  /* At this point malloc and free should be working */
+  app_main();
+}
+
+
+int start_kernel_hvm()
+{
+  /*  console_clear(); */
+    printk("mirage OS, HVM edition!\n");
+    printk("spinning for a bit\n");
+    int i=10000;
+    while(i--) {
+      console_clear();
+    }
+    framebuffer_scroll();
+    look_for_xen();
+    do_start();
+    printk("spinning forever\n");
+
+    while (1) {
+    };
+
+    return 0;
 }
 

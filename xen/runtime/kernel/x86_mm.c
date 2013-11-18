@@ -947,7 +947,7 @@ void arch_init_mm(unsigned long* start_pfn_p, unsigned long* max_pfn_p)
     printk("  start_pfn: %lx\n", start_pfn);
     printk("    max_pfn: %lx\n", max_pfn);
 
-    build_pagetable(&start_pfn, &max_pfn);
+    //    build_pagetable(&start_pfn, &max_pfn);
     /* clear_bootstrap(); */
     /* set_readonly(&_text, &_erodata); */
 

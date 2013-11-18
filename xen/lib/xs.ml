@@ -39,6 +39,7 @@ module IO = struct
       | Some x -> Lwt.return x 
       | None -> 
         let page = Io_page.to_cstruct Start_info.(xenstore_start_page ()) in
+	let page = Io_page.to_cstruct (Io_page.get 1) in
         Xenstore_ring.Ring.init page;
         let evtchn = Eventchn.of_int Start_info.((get ()).store_evtchn) in
         Eventchn.unmask h evtchn;

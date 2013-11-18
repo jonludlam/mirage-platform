@@ -137,7 +137,7 @@ static __inline__ paddr_t machine_to_phys(maddr_t machine)
 }
 #endif
 
-#define VIRT_START                 ((unsigned long)&_text)
+#define VIRT_START                 ((unsigned long)0x0)
 
 #define to_phys(x)                 ((unsigned long)(x)-VIRT_START)
 #define to_virt(x)                 ((void *)((unsigned long)(x)+VIRT_START))
