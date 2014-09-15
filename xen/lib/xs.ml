@@ -84,9 +84,4 @@ module IO = struct
       loop Activations.program_start buf ofs len
 end
 
-include Xs_client_lwt.Client(IO)
-
-let resume client =
-  IO.refresh();
-  resume client
 

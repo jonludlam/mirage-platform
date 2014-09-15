@@ -27,6 +27,10 @@ val add_resume_hook : (unit -> unit Lwt.t) -> unit
 (** [add_resume_hook f] adds [f] in the list of functions to be called
     on resume. *)
 
+val add_suspend_hook : (unit -> unit Lwt.t) -> unit
+(** [add_suspend_hook f] adds [f] in the list of functions to be called
+    before suspend *)
+
 val shutdown: reason -> unit
 (** [shutdown reason] informs Xen that the unikernel has shutdown. The
     [reason] argument indicates the type of shutdown (according to
